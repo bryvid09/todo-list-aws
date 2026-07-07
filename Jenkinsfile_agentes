@@ -2,26 +2,42 @@ pipeline {
     agent any
     stages {
         stage('Get Code') {
+            agent { label 'built-in' }
             steps {
                 git branch: 'master',
                     url: 'https://github.com/bryvid09/todo-list-aws.git'
                 sh 'ls -la'
+                stash name: 'code', includes: '**'
             }
         }
         
         stage('Deploy') {
+            agent { label 'built-in' }
             steps {
                 sh '''
+                    whoami
+                    hostname
                     sam build
                     sam validate --region us-east-1
                     sam deploy --config-env production --no-confirm-changeset --no-fail-on-empty-changeset
                 '''
+                script {
+                    env.BASE_URL = sh(returnStdout: true, script: '''
+                        aws cloudformation describe-stacks --stack-name todo-list-aws-staging \
+                          --query "Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue" \
+                          --output text --region us-east-1
+                    ''').trim()
+                }
             }
         }
         
         stage('Rest Test') {
+            agent { label 'rest' }
             steps {
+                unstash 'code'
                 sh '''
+                    whoami
+                    hostname
                     export BASE_URL=$(aws cloudformation describe-stacks \
                       --stack-name todo-list-aws-production \
                       --query "Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue" \
