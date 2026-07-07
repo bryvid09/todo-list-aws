@@ -57,6 +57,7 @@ class TestApi(unittest.TestCase):
         data = {
          "text": "Integration text example"
         }
+        print('prueba')
         response = requests.post(url, data=json.dumps(data))
         json_response = response.json()
         print('Response Add Todo: '+ json_response['body'])
