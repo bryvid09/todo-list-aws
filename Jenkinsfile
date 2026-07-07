@@ -23,7 +23,7 @@ pipeline {
             steps {
                 sh '''
                     export BASE_URL=$(aws cloudformation describe-stacks \
-                      --stack-name todo-list-aws-staging \
+                      --stack-name todo-list-aws-production \
                       --query "Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue" \
                       --output text --region us-east-1)
                     echo "URL de aws es: $BASE_URL"
