@@ -40,8 +40,8 @@ pipeline {
                       --stack-name todo-list-aws-staging \
                       --query "Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue" \
                       --output text --region us-east-1)
-                    echo "Probando API en: $BASE_URL"
-                    pytest test/integration/todoApiTest.py --junitxml=result-rest.xml
+                    echo "URL de aws es: $BASE_URL"
+                    pytest -s -v test/integration/todoApiTest.py --junitxml=result-rest.xml
                 '''
                 junit 'result-rest.xml'
             }
