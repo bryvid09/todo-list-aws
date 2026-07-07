@@ -15,7 +15,7 @@ pipeline {
         stage('Static Test') {
             agent { label 'static' }
             steps {
-                untash 'code'
+                unstash 'code'
                 sh '''
                     whoami
                     hostname
@@ -53,7 +53,7 @@ pipeline {
         stage('Rest Test') {
             agent { label 'rest' }
             steps {
-                untash 'code'
+                unstash 'code'
                 sh '''
                     whoami
                     hostname
