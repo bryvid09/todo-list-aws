@@ -2,16 +2,23 @@ pipeline {
     agent any
     stages {
         stage('Get Code') {
+            agent { label 'built-in' }
             steps {
+                sh 'whoami; hostname'
                 git branch: 'develop',
                     url: 'https://github.com/bryvid09/todo-list-aws.git'
                 sh 'ls -la'
+                stash name: 'code', includes: '**'
             }
         }
 
         stage('Static Test') {
+            agent { label 'static' }
             steps {
+                untash 'code'
                 sh '''
+                    whoami
+                    hostname
                     flake8 --exit-zero --format=pylint src > flake8.out
                     bandit --exit-zero -r src -f custom -o bandit.out \
                       --msg-template "{abspath}:{line}: [{test_id}] {msg}"
@@ -24,18 +31,32 @@ pipeline {
         }
         
         stage('Deploy') {
+            agent { label 'built-in' }
             steps {
                 sh '''
+                    whoami
+                    hostname
                     sam build
                     sam validate --region us-east-1
                     sam deploy --config-env staging --no-confirm-changeset --no-fail-on-empty-changeset
                 '''
+                script {
+                    env.BASE_URL = sh(returnStdout: true, script: '''
+                        aws cloudformation describe-stacks --stack-name todo-list-aws-staging \
+                          --query "Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue" \
+                          --output text --region us-east-1
+                    ''').trim()
+                }
             }
         }
         
         stage('Rest Test') {
+            agent { label 'rest' }
             steps {
+                untash 'code'
                 sh '''
+                    whoami
+                    hostname
                     export BASE_URL=$(aws cloudformation describe-stacks \
                       --stack-name todo-list-aws-staging \
                       --query "Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue" \
@@ -48,7 +69,9 @@ pipeline {
         }
         
         stage('Promote') {
+            agent { label 'built-in' }
             steps {
+                sh 'whoami; hostname'
                 withCredentials([usernamePassword(credentialsId: 'github-token',
                     usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     sh '''
