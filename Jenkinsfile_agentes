@@ -76,7 +76,7 @@ pipeline {
                     usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     sh '''
                         git checkout -B master origin/master
-                        git merge origin/develop -m "Stage promote OK"
+                        git merge origin/develop -m "Stage promote OK" -X ours
                         git push https://$GIT_USER:$GIT_TOKEN@github.com/bryvid09/todo-list-aws.git master
                     '''
                 }
