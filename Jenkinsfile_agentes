@@ -4,6 +4,7 @@ pipeline {
         stage('Get Code') {
             agent { label 'built-in' }
             steps {
+                sh 'whoami; hostname'
                 git branch: 'master',
                     url: 'https://github.com/bryvid09/todo-list-aws.git'
                 sh 'ls -la'
@@ -23,7 +24,7 @@ pipeline {
                 '''
                 script {
                     env.BASE_URL = sh(returnStdout: true, script: '''
-                        aws cloudformation describe-stacks --stack-name todo-list-aws-staging \
+                        aws cloudformation describe-stacks --stack-name todo-list-aws-production \
                           --query "Stacks[0].Outputs[?OutputKey=='BaseUrlApi'].OutputValue" \
                           --output text --region us-east-1
                     ''').trim()
@@ -48,6 +49,5 @@ pipeline {
                 junit 'result-rest.xml'
             }
         }
-        
     }
 }
