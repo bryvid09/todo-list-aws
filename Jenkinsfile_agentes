@@ -12,7 +12,7 @@ pipeline {
                     usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
                     sh '''
                         rm -f samconfig.toml
-                        git clone --branch staging --single-branch \
+                        git clone --branch production --single-branch \
                             https://$GIT_USER:$GIT_TOKEN@github.com/bryvid09/todo-list-aws-config.git samconfig-tmp
                         cp samconfig-tmp/samconfig.toml .
                         rm -rf samconfig-tmp
